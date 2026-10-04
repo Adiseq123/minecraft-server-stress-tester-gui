@@ -1,0 +1,42 @@
+{
+  "name": "minecraft-stress-tester",
+  "version": "1.0.0",
+  "description": "Mineflayer stress testing bot with Electron GUI",
+  "author": "Adisek",
+  "main": "botterkabezproxy.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder -w",
+    "dist:win": "electron-builder --win",
+    "dist:linux": "electron-builder --linux"
+  },
+  "build": {
+    "appId": "com.minetester.app",
+    "productName": "MinecraftStressTester",
+    "files": [
+      "**/*",
+      "!dist/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "portable"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility"
+    }
+  },
+  "dependencies": {
+    "mineflayer": "^4.20.0"
+  },
+  "devDependencies": {
+    "electron": "^30.5.1",
+    "electron-builder": "^26.15.3"
+  }
+}

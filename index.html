@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mineflayer Control Panel</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #0f1319;
+      color: #e1e7ed;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* HEADER */
+    header {
+      height: 55px;
+      background: #161b22;
+      border-bottom: 1px solid #262c36;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      flex-shrink: 0;
+    }
+
+    .app-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #58a6ff;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #0d1117;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid #30363d;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #484f58;
+      transition: all 0.3s ease;
+    }
+
+    .dot.running {
+      background-color: #2ea043;
+      box-shadow: 0 0 10px rgba(46, 160, 67, 0.6);
+    }
+
+    /* MAIN CONTAINER */
+    .container {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      grid-template-rows: 1fr 280px;
+      gap: 12px;
+      padding: 12px;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .card {
+      background: #161b22;
+      border: 1px solid #262c36;
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .card-title {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #8b949e;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    /* LEFT PANEL - CONTROL & STATS */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .stat-box {
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 6px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: #8b949e;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #f0f6fc;
+    }
+
+    .controls-btn {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: auto;
+    }
+
+    button {
+      border: none;
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .btn-start {
+      background: #238636;
+      color: #ffffff;
+    }
+
+    .btn-start:hover {
+      background: #2ea043;
+    }
+
+    .btn-stop {
+      background: #da3633;
+      color: #ffffff;
+    }
+
+    .btn-stop:hover {
+      background: #f85149;
+    }
+
+    .btn-sec {
+      background: #21262d;
+      color: #c9d1d9;
+      border: 1px solid #30363d;
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    .btn-sec:hover {
+      background: #30363d;
+    }
+
+    /* RIGHT PANEL - FORM CONFIG */
+    .config-form {
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-right: 4px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+
+    label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #8b949e;
+      text-transform: uppercase;
+    }
+
+    input, textarea {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 8px 10px;
+      color: #c9d1d9;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, textarea:focus {
+      border-color: #58a6ff;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 55px;
+      font-family: monospace;
+    }
+
+    /* BOTTOM PANEL - LOGS */
+    .logs-card {
+      grid-column: 1 / 3;
+    }
+
+    .logs-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .log-area {
+      flex: 1;
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 6px;
+      padding: 10px;
+      overflow-y: auto;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .log-line {
+      margin-bottom: 2px;
+      word-break: break-all;
+    }
+
+    /* Kolory logów */
+    .log-time { color: #484f58; }
+    .log-info { color: #58a6ff; }
+    .log-success { color: #3fb950; }
+    .log-warn { color: #d29922; }
+    .log-error { color: #f85149; }
+    .log-disconnect { color: #db6d28; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="app-title">MINEFLAYER CONTROL PANEL</div>
+    <div class="status-badge">
+      <div class="dot" id="statusDot"></div>
+      <span id="statusText">STOPPED</span>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- LEWY PANEL: STEROWANIE -->
+    <div class="card">
+      <div class="card-title">Panel Główny</div>
+
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-label">BOTY</div>
+          <div class="stat-value" id="botCountVal">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">LOGI</div>
+          <div class="stat-value" id="logCount">0</div>
+        </div>
+      </div>
+
+      <div class="controls-btn">
+        <button class="btn-start" id="startBtn">START</button>
+        <button class="btn-stop" id="stopBtn">STOP</button>
+      </div>
+    </div>
+
+    <!-- PRAWY PANEL: KONFIGURACJA -->
+    <div class="card">
+      <div class="card-title">Konfiguracja Testu</div>
+      <div class="config-form">
+        
+        <div class="form-row">
+          <div class="form-group" style="flex: 2;">
+            <label>Host / IP Serwera</label>
+            <input type="text" id="cfgHost" value="domenaserwera.pl">
+          </div>
+          <div class="form-group">
+            <label>Port</label>
+            <input type="number" id="cfgPort" value="25565">
+          </div>
+          <div class="form-group">
+            <label>Wersja</label>
+            <input type="text" id="cfgVersion" value="1.21.1">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Liczba Botów</label>
+            <input type="number" id="cfgBotCount" value="20">
+          </div>
+          <div class="form-group">
+            <label>Hasło (rejestracja/logowanie)</label>
+            <input type="text" id="cfgPassword" value="TestPassword123!">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Opóźnienie Wejścia (ms)</label>
+            <input type="number" id="cfgSpawnDelay" value="1000">
+          </div>
+          <div class="form-group">
+            <label>Opóźnienie Reconnect (ms)</label>
+            <input type="number" id="cfgReconnectDelay" value="5000">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Wiadomości Czatu (jedna w nowej linii)</label>
+          <textarea id="cfgMessages">Siema wszystkim!
+Co tam słychać na serwerze?
+Fajny ten serwer
+Testowanie wydajności...
+Ma ktoś sprzedać drewno?
+Siemanko :)</textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Komendy Czatu (jedna w nowej linii)</label>
+          <textarea id="cfgCommands">/help
+/list
+/ping
+/spawn</textarea>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- DOLNY PANEL: KONSOLA -->
+    <div class="card logs-card">
+      <div class="logs-header">
+        <div class="card-title" style="margin: 0;">Konsola Logów</div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-sec" id="clearBtn">Wyczyść Logi</button>
+        </div>
+      </div>
+      <div class="logArea" id="logArea"></div>
+    </div>
+
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron')
+
+    const logArea = document.getElementById('logArea')
+    const logCountEl = document.getElementById('logCount')
+    const statusDot = document.getElementById('statusDot')
+    const statusText = document.getElementById('statusText')
+    const botCountVal = document.getElementById('botCountVal')
+
+    let logCounter = 0
+
+    function appendLog(message) {
+      logCounter++
+      logCountEl.textContent = logCounter
+
+      const line = document.createElement('div')
+      line.className = 'logLine'
+
+      const time = new Date().toLocaleTimeString()
+      let colorClass = 'log-info'
+
+      if (message.includes('[+]')) colorClass = 'log-success'
+      else if (message.includes('[!]')) colorClass = 'log-warn'
+      else if (message.includes('[X]')) colorClass = 'log-error'
+      else if (message.includes('[-]')) colorClass = 'log-disconnect'
+
+      line.innerHTML = `<span class="log-time">[${time}]</span> <span class="${colorClass}">${escapeHtml(message)}</span>`
+      logArea.appendChild(line)
+
+      logArea.scrollTop = logArea.scrollHeight
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    }
+
+    ipcRenderer.on('gui-log', (_, message) => {
+      appendLog(message)
+    })
+
+    document.getElementById('clearBtn').onclick = () => {
+      logArea.innerHTML = ''
+      logCounter = 0
+      logCountEl.textContent = '0'
+    }
+
+    document.getElementById('startBtn').onclick = () => {
+      const messagesRaw = document.getElementById('cfgMessages').value
+      const commandsRaw = document.getElementById('cfgCommands').value
+
+      const config = {
+        host: document.getElementById('cfgHost').value.trim(),
+        port: parseInt(document.getElementById('cfgPort').value, 10) || 25565,
+        version: document.getElementById('cfgVersion').value.trim(),
+        botCount: parseInt(document.getElementById('cfgBotCount').value, 10) || 1,
+        botPassword: document.getElementById('cfgPassword').value,
+        spawnDelayMs: parseInt(document.getElementById('cfgSpawnDelay').value, 10) || 1000,
+        reconnectDelayMs: parseInt(document.getElementById('cfgReconnectDelay').value, 10) || 5000,
+        messages: messagesRaw.split('\n').map(s => s.trim()).filter(Boolean),
+        commands: commandsRaw.split('\n').map(s => s.trim()).filter(Boolean)
+      }
+
+      statusDot.classList.add('running')
+      statusText.textContent = 'RUNNING'
+      botCountVal.textContent = config.botCount
+
+      ipcRenderer.send('start-test', config)
+    }
+
+    document.getElementById('stopBtn').onclick = () => {
+      statusDot.classList.remove('running')
+      statusText.textContent = 'STOPPED'
+      botCountVal.textContent = '0'
+
+      ipcRenderer.send('stop-test')
+    }
+  </script>
+</body>
+</html>
