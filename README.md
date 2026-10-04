@@ -1,3 +1,5 @@
+<img width="1536" height="820" alt="image" src="https://github.com/user-attachments/assets/92cfb151-105f-44b6-bc49-a5a9924d4462" />
+
 # 🎮 Minecraft Server Stress Tester GUI
 
 **Direct Connection / No Proxy**
